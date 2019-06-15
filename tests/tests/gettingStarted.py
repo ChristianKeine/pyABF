@@ -651,6 +651,61 @@ class UseCaseManager:
         plt.grid(alpha=.2) #ignore
         self.saveAndClose()
 
+    def demo_15_epochs(self):
+        """
+        ## Accessing Epoch Information
+
+        In some ABFs an epoch table is used to control the command level of the
+        DAC to control voltage or current. While the epoch table can be
+        confusing to access directly from the header (e.g., the first epoch
+        does not start at time 0, but rather 1/64 of the sweep length), a
+        simplified way to access epoch types and levels is provided with the
+        `abf.sweepEpochs` object, which contains epoch points, levels, and types
+        for the currently-loaded sweep.
+
+        For example, the output of this script:
+        ```python
+        import pyabf
+        abf = pyabf.ABF("2018_08_23_0009.abf")
+        for i, p1 in enumerate(abf.sweepEpochs.p1s):
+            epochLevel = abf.sweepEpochs.levels[i]
+            epochType = abf.sweepEpochs.types[i]
+            print(f"epoch index {i}: at point {p1} there is a {epochType} to level {epochLevel}")
+        ```
+
+        looks like this:
+        ```
+        epoch index 0: at point 0 there is a Step to level -70.0
+        epoch index 1: at point 187 there is a Step to level -80.0
+        epoch index 2: at point 4187 there is a Step to level -70.0
+        epoch index 3: at point 8187 there is a Ramp to level -80.0
+        epoch index 4: at point 9187 there is a Ramp to level -70.0
+        epoch index 5: at point 10187 there is a Step to level -70.0
+        ```
+        """
+
+        import pyabf
+        abf = pyabf.ABF("data/abfs/2018_08_23_0009.abf")
+
+        fig = plt.figure(figsize=self.figsize)
+
+        ax1 = fig.add_subplot(211)
+        ax1.plot(abf.sweepY, color='b')
+        ax1.set_ylabel("ADC (measurement)")
+        ax1.set_xlabel("sweep point (index)")
+
+        ax2 = fig.add_subplot(212)
+        ax2.plot(abf.sweepC, color='r')
+        ax2.set_ylabel("DAC (command)")
+        ax2.set_xlabel("sweep point (index)")
+
+        for p1 in abf.sweepEpochs.p1s:
+            ax1.axvline(p1, color='k', ls='--', alpha=.5)
+            ax2.axvline(p1, color='k', ls='--', alpha=.5)
+
+        plt.tight_layout()
+        self.saveAndClose()
+
     def advanced_15a_IV_curve(self):
         """
         ## Create an I/V Curve
@@ -757,6 +812,60 @@ class UseCaseManager:
 
     plt.show()
 
+    def advanced_18_memtestOverTime(self):
+        """
+        ## Passive Membrane Properties
+
+        The pyabf.tools.memtest module has methods which can determine passive
+        membrane properties (holding current, membrane resistance, access
+        resistance, whole-cell capacitance) from voltage-clamp traces containing
+        a hyperpolarizing step. Theory and implimentation details are in the
+        comments of the module. This example demonstrates how to graph passive
+        membrane properties sweep-by-sweep, and indicate where comment tags
+        were added.
+        """
+
+        import pyabf
+        import pyabf.tools.memtest
+        
+        abf = pyabf.ABF("data/abfs/vc_drug_memtest.abf")
+        Ihs, Rms, Ras, Cms = pyabf.tools.memtest.step_valuesBySweep(abf)
+
+        # That's it! The rest of the code just plots these 4 numpy arrays.
+        fig = plt.figure(figsize=self.figsize)
+
+        ax1 = fig.add_subplot(221)
+        ax1.grid(alpha=.2)
+        ax1.plot(abf.sweepTimesMin, Ihs, ".", color='C0', alpha=.7, mew=0)
+        ax1.set_title("Clamp Current")
+        ax1.set_ylabel("Current (pA)")
+
+        ax2 = fig.add_subplot(222)
+        ax2.grid(alpha=.2)
+        ax2.plot(abf.sweepTimesMin, Rms, ".", color='C3', alpha=.7, mew=0)
+        ax2.set_title("Membrane Resistance")
+        ax2.set_ylabel("Resistance (MOhm)")
+
+        ax3 = fig.add_subplot(223)
+        ax3.grid(alpha=.2)
+        ax3.plot(abf.sweepTimesMin, Ras, ".", color='C1', alpha=.7, mew=0)
+        ax3.set_title("Access Resistance")
+        ax3.set_ylabel("Resistance (MOhm)")
+
+        ax4 = fig.add_subplot(224)
+        ax4.grid(alpha=.2)
+        ax4.plot(abf.sweepTimesMin, Cms, ".", color='C2', alpha=.7, mew=0)
+        ax4.set_title("Whole-Cell Capacitance")
+        ax4.set_ylabel("Capacitance (pF)")
+
+        for ax in [ax1, ax2, ax3, ax4]:
+            ax.margins(0, .9)
+            ax.set_xlabel("Experiment Time (minutes)")
+            for tagTime in abf.tagTimesMin:
+                ax.axvline(tagTime, color='k', ls='--')
+
+        plt.tight_layout()
+        self.saveAndClose()
 
 def cleanDocstrings(s):
     s = s.strip()

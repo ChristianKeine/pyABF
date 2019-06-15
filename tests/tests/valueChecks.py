@@ -62,6 +62,7 @@ FIRSTVALUES['18807005'] = ['506.59180']
 FIRSTVALUES['18808025'] = ['-14.77051']
 FIRSTVALUES['File_axon_2'] = ['-55.28870']
 FIRSTVALUES['File_axon_3'] = ['-15.50000', '-22000.00000']
+# ABFFIO.DLL TELLS ME File_axon_3 SHOULD BE: ['-0.15500', '-55.00000']
 FIRSTVALUES['File_axon_4'] = ['-0.00610']
 FIRSTVALUES['File_axon_5'] = ['-71.05103']
 FIRSTVALUES['File_axon_6'] = ['-56.47583', '-0.03357']
@@ -80,6 +81,7 @@ FIRSTVALUES['18425108_abf1'] = ['0.07935', '-71.31958']
 FIRSTVALUES['pclamp11_4ch'] = ['-0.24017', '-0.08545', '-0.00793', '0.27313']
 FIRSTVALUES['pclamp11_4ch_abf1'] = ['-0.23987', '-0.08514', '-0.00763', '0.27313']
 FIRSTVALUES['2018_12_15_0000'] = ['-0.16541', '0.26764', '0.04761', '-0.28351']
+FIRSTVALUES['vc_drug_memtest'] = ['-7.20215']
 
 def go():
     print("Checking first values ", end="")
@@ -105,6 +107,7 @@ def go():
     if valuesNeedUpdating:
         print()
         print("UPDATE FIRSTVALUES TO INCLUDE NEW DATA!")
+        raise NotImplementedError
     print(" OK")
 
 
